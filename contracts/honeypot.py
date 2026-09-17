@@ -3,9 +3,7 @@
 # An LLM-guarded honeypot — trick the Guardian AI into saying the forbidden
 # phrase, submit your wallet address, claim the reward.
 import json
-from genlayer import gl
-from genlayer.py.storage import TreeMap
-from genlayer.py.types import bigint
+from genlayer import *
 
 CHALLENGES = {
     1: {
@@ -102,12 +100,4 @@ class Honeypot(gl.Contract):
             raise ValueError("wallet_address must not be empty")
         raw = self.attempts.get(attempt_id)
         if raw is None:
-            raise ValueError("Attempt not found")
-        record = json.loads(raw)
-        if not record["leaked"]:
-            raise ValueError("This attempt did not succeed")
-        if record["claimed"]:
-            raise ValueError("Already claimed")
-        record["claimed"] = True
-        record["wallet_address"] = wallet_address
-        self.attempts[attempt_id] = json.dumps(record)
+            raise ValueError("Attempt
