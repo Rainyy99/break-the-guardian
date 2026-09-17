@@ -44,7 +44,7 @@ class Honeypot(gl.Contract):
         self.attempt_counter = bigint(0)
 
     @gl.public.write
-    def attempt_hack(self, challenge_level: int, prompt_text: str) -> dict:
+    def attempt_hack(self, challenge_level: int, prompt_text: str) -> str:
         challenge = CHALLENGES.get(challenge_level)
         if challenge is None:
             raise ValueError("Invalid challenge level")
@@ -69,7 +69,7 @@ class Honeypot(gl.Contract):
             "claimed": False,
         }
         self.attempts[attempt_id] = json.dumps(record)
-        return {"attempt_id": attempt_id, "leaked": leaked}
+        return json.dumps({"attempt_id": attempt_id, "leaked": leaked})
 
     @gl.public.view
     def get_attempt(self, attempt_id: str) -> str:
@@ -100,4 +100,12 @@ class Honeypot(gl.Contract):
             raise ValueError("wallet_address must not be empty")
         raw = self.attempts.get(attempt_id)
         if raw is None:
-            raise ValueError("Attempt
+            raise ValueError("Attempt not found")
+        record = json.loads(raw)
+        if not record["leaked"]:
+            raise ValueError("This attempt did not succeed")
+        if record["claimed"]:
+            raise ValueError("Already claimed")
+        record["claimed"] = True
+        record["wallet_address"] = wallet_address
+        self.attempts[attempt_id] = json.dumps(record)
