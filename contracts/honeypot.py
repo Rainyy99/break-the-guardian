@@ -42,7 +42,7 @@ class Honeypot(gl.Contract):
     attempts: TreeMap[str, str]  # attempt_id -> json {level, prompt, leaked, claimed, wallet}
     attempt_counter: bigint
 
-    def init(self):
+    def __init__(self):
         self.attempt_counter = bigint(0)
 
     @gl.public.write
