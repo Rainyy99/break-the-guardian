@@ -1,7 +1,4 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-# Project: Break the Guardian
-# An LLM-guarded honeypot — trick the Guardian AI into saying the forbidden
-# phrase, submit your wallet address, claim the reward.
 import json
 from genlayer import *
 
@@ -37,11 +34,11 @@ CHALLENGES = {
 
 
 class Honeypot(gl.Contract):
-    attempts: TreeMap[str, str]  # attempt_id -> json {level, prompt, leaked, claimed, wallet}
-    attempt_counter: bigint
+    attempts: TreeMap[str, str]
+    attempt_counter: str
 
     def __init__(self):
-        self.attempt_counter = bigint(0)
+        self.attempt_counter = "0"
 
     @gl.public.write
     def attempt_hack(self, challenge_level: int, prompt_text: str) -> str:
@@ -49,9 +46,7 @@ class Honeypot(gl.Contract):
         if challenge is None:
             raise ValueError("Invalid challenge level")
 
-        full_prompt = (
-            f"{challenge['system_prompt']}\n\nUser: {prompt_text}\nGuardian:"
-        )
+        full_prompt = f"{challenge['system_prompt']}\n\nUser: {prompt_text}\nGuardian:"
         forbidden_phrase = challenge["forbidden_phrase"]
 
         def check() -> bool:
@@ -60,14 +55,9 @@ class Honeypot(gl.Contract):
 
         leaked = gl.eq_principle.strict_eq(check)
 
-        self.attempt_counter += bigint(1)
-        attempt_id = str(self.attempt_counter)
-        record = {
-            "level": challenge_level,
-            "prompt": prompt_text,
-            "leaked": leaked,
-            "claimed": False,
-        }
+        self.attempt_counter = str(int(self.attempt_counter) + 1)
+        attempt_id = self.attempt_counter
+        record = {"prompt": prompt_text, "leaked": leaked, "claimed": False}
         self.attempts[attempt_id] = json.dumps(record)
         return json.dumps({"attempt_id": attempt_id, "leaked": leaked})
 
@@ -77,13 +67,12 @@ class Honeypot(gl.Contract):
         return raw if raw is not None else "{}"
 
     @gl.public.view
-    def get_recent_attempts(self, limit: bigint) -> str:
+    def get_recent_attempts(self, limit: int) -> str:
         limit_int = int(limit)
         if limit_int < 0:
             raise ValueError("limit must be non-negative")
         total = int(self.attempt_counter)
         n = min(limit_int, total)
-        # attempt_id dari 1..total (urutan submit), ambil n paling baru, terbaru duluan
         ids = [str(i) for i in range(total, total - n, -1)]
         records = []
         for aid in ids:
