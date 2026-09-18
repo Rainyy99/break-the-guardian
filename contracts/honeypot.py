@@ -2,6 +2,17 @@
 import json
 from genlayer import *
 
+
+@gl.evm.contract_interface
+class _EoaRecipient:
+    class View:
+        pass
+
+    class Write:
+        pass
+
+REWARD_AMOUNT = 100  # base units per successful claim — sesuaikan nanti
+
 CHALLENGES = {
     1: {
         "forbidden_phrase": "ACCESS GRANTED",
@@ -36,9 +47,11 @@ CHALLENGES = {
 class Honeypot(gl.Contract):
     attempts: TreeMap[str, str]
     attempt_counter: str
+    total_received: str
 
     def __init__(self):
         self.attempt_counter = "0"
+        self.total_received = "0"
 
     @gl.public.write
     def attempt_hack(self, challenge_level: int, prompt_text: str) -> str:
@@ -83,6 +96,15 @@ class Honeypot(gl.Contract):
                 records.append(record)
         return json.dumps(records)
 
+    @gl.public.write.payable
+    def fund(self):
+        amount = gl.message.value
+        self.total_received = str(int(self.total_received) + amount)
+
+    @gl.public.view
+    def get_balance(self) -> int:
+        return int(self.total_received)
+
     @gl.public.write
     def claim_reward(self, attempt_id: str, wallet_address: str):
         if not wallet_address or not wallet_address.strip():
@@ -95,6 +117,15 @@ class Honeypot(gl.Contract):
             raise ValueError("This attempt did not succeed")
         if record["claimed"]:
             raise ValueError("Already claimed")
+
+        available = int(self.total_received)
+        if available < REWARD_AMOUNT:
+            raise ValueError("Contract has insufficient funds for payout")
+
         record["claimed"] = True
         record["wallet_address"] = wallet_address
         self.attempts[attempt_id] = json.dumps(record)
+        self.total_received = str(available - REWARD_AMOUNT)
+
+        recipient = _EoaRecipient(Address(wallet_address))
+        recipient.emit_transfer(value=u256(REWARD_AMOUNT))
