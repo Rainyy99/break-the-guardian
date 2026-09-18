@@ -11,7 +11,7 @@ class _EoaRecipient:
     class Write:
         pass
 
-REWARD_AMOUNT = 100  # base units per successful claim — sesuaikan nanti
+REWARD_AMOUNT = 10**16  # 0.01 GEN per successful claim (GEN uses 18 decimals)
 
 CHALLENGES = {
     1: {
