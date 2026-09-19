@@ -70,7 +70,12 @@ class Honeypot(gl.Contract):
 
         self.attempt_counter = str(int(self.attempt_counter) + 1)
         attempt_id = self.attempt_counter
-        record = {"prompt": prompt_text, "leaked": leaked, "claimed": False}
+        record = {
+            "prompt": prompt_text,
+            "leaked": leaked,
+            "claimed": False,
+            "solver": str(gl.message.sender_address),
+        }
         self.attempts[attempt_id] = json.dumps(record)
         return json.dumps({"attempt_id": attempt_id, "leaked": leaked})
 
@@ -113,6 +118,8 @@ class Honeypot(gl.Contract):
         if raw is None:
             raise ValueError("Attempt not found")
         record = json.loads(raw)
+        if str(gl.message.sender_address) != record["solver"]:
+            raise ValueError("Only the original solver can claim this reward")
         if not record["leaked"]:
             raise ValueError("This attempt did not succeed")
         if record["claimed"]:
