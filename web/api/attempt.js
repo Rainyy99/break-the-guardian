@@ -57,7 +57,11 @@ export default async function handler(req, res) {
       });
     }
 
-    const output = JSON.parse(leaderReceipt.result);
+    console.log("leaderReceipt.result type:", typeof leaderReceipt.result);
+    console.log("leaderReceipt.result value:", JSON.stringify(leaderReceipt.result));
+
+    const raw = leaderReceipt.result;
+    const output = typeof raw === "string" ? JSON.parse(raw) : raw;
     const token = makeToken(output.attempt_id);
     return res.status(200).json({ ...output, token });
   } catch (err) {
