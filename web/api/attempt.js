@@ -61,7 +61,16 @@ export default async function handler(req, res) {
     console.log("leaderReceipt.result value:", JSON.stringify(leaderReceipt.result));
 
     const raw = leaderReceipt.result;
-    const output = typeof raw === "string" ? JSON.parse(raw) : raw;
+    let output;
+    if (typeof raw === "string") {
+      output = JSON.parse(raw);
+    } else if (raw && typeof raw === "object" && "payload" in raw) {
+      output = typeof raw.payload === "string" ? JSON.parse(raw.payload) : raw.payload;
+    } else {
+      output = raw;
+    }
+    console.log("extracted output:", JSON.stringify(output));
+
     const token = makeToken(output.attempt_id);
     return res.status(200).json({ ...output, token });
   } catch (err) {
