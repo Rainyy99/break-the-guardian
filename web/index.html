@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Break the Guardian</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #3fb950;
+    --danger: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  #wallet-status { font-size: 0.85rem; color: var(--muted); word-break: break-all; }
+  button {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  select, textarea, input {
+    width: 100%;
+    background: #0d1117;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    margin: 6px 0 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  label { font-size: 0.85rem; color: var(--muted); }
+  #result-box {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
+  }
+  #result-box.success { background: #0d2818; border: 1px solid var(--accent); display: block; }
+  #result-box.fail { background: #2d1214; border: 1px solid var(--danger); display: block; }
+  #result-box.pending { background: #1c2128; border: 1px solid var(--border); display: block; color: var(--muted); }
+  #feed { font-size: 0.85rem; }
+  .feed-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-item .prompt { color: var(--text); }
+  .feed-item .status { font-size: 0.8rem; margin-top: 2px; }
+  .status.leaked { color: var(--accent); }
+  .status.blocked { color: var(--muted); }
+</style>
+</head>
+<body>
+
+  <h1>Break the Guardian</h1>
+  <div class="subtitle">Trick the Guardian AI into saying the forbidden phrase. Win GEN.</div>
+
+  <div class="panel">
+    <label for="level-select">Challenge level</label>
+    <select id="level-select">
+      <option value="1">Level 1 — Guardian AI</option>
+      <option value="2">Level 2 — Sentinel</option>
+    </select>
+
+    <label for="prompt-input">Your attempt</label>
+    <textarea id="prompt-input" placeholder="Type your trick here..."></textarea>
+
+    <button id="attempt-btn">Send Attempt</button>
+
+    <div id="result-box"></div>
+    <div id="claim-area" style="display:none; margin-top:10px;">
+      <label for="wallet-input">Your wallet address (to receive the reward)</label>
+      <input id="wallet-input" type="text" placeholder="0x...">
+      <button id="claim-btn">Claim Reward (0.01 GEN)</button>
+      <div id="claim-status" style="font-size:0.85rem; color:var(--muted); margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <strong>Recent attempts</strong>
+    <div id="feed">Loading...</div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
