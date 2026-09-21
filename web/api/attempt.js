@@ -64,8 +64,17 @@ export default async function handler(req, res) {
     let output;
     if (typeof raw === "string") {
       output = JSON.parse(raw);
+    } else if (raw?.payload?.readable && typeof raw.payload.readable === "string") {
+      output = JSON.parse(raw.payload.readable);
     } else if (raw && typeof raw === "object" && "payload" in raw) {
-      output = typeof raw.payload === "string" ? JSON.parse(raw.payload) : raw.payload;
+      let p = raw.payload;
+      if (p && typeof p === "object" && "readable" in p) {
+        p = p.readable;
+      }
+      output = typeof p === "string" ? JSON.parse(p) : p;
+      if (typeof output === "string") {
+        output = JSON.parse(output);
+      }
     } else {
       output = raw;
     }
